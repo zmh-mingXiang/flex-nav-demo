@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>flex-layout</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .box {
+            width: 100%;
+            height: 50px;
+            background-color: #00aaee;
+        }
+
+        .box .box-item {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            width: 100%;
+            height: 50px;
+            overflow-x: scroll;
+            overflow-y: hidden;
+            white-space: nowrap;
+            background-color: #ff0000;
+        }
+
+        .box .box-item .item-group {
+            display: block;
+            flex: 0 0 16.667%;
+            width: 16.667%;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            box-sizing: border-box;
+            border-right: 1px solid #ccc;
+        }
+
+        .box .box-item .item-group.actived {
+            color: #fff;
+        }
+        .content .content-item {
+            display: block;
+            height: 200px;
+            background-color: yellow;
+        }
+
+        ::-webkit-scrollbar {
+            display: none
+        }
+    </style>
+</head>
+<body>
+<div id="myApp">
+    <div class="box">
+        <div class="box-item month-list">
+            <div class="item-group" v-for="(item,index) in monthDatas"
+                 :key="index"
+                 @click="tabHeader(item,index)"
+                 :class="{'actived':currentMonth == index+1}">{{item}}
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div>
+            <div class="content-item">{{contentData}}</div>
+        </div>
+        <div><a href="./link-view.html">跳转链接</a></div>
+    </div>
+</div>
+</body>
+</html>
+<!-- 生产环境版本，优化了尺寸和速度 -->
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script>
+    var app = new Vue({
+        el: '#myApp',
+        data: {
+            monthDatas: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+            contentData: '',
+            currentMonth: ''
+        },
+        methods: {
+            tabHeader:function(item,index) {
+                this.currentMonth = parseInt(index)+1;
+                this.contentData = item;
+                sessionStorage.setItem('currentMonth',this.currentMonth);
+                //记录位置
+                setTimeout(() => {
+                    console.log(document.querySelector('.month-list').scrollLeft, 'temp')
+                    sessionStorage.setItem('monthListScrollLeft', document.querySelector('.month-list').scrollLeft)
+                }, 1000)
+            }
+        },
+        beforeCreate(){
+             sessionStorage.getItem('currentMonth') && (this.currentMonth = sessionStorage.getItem('currentMonth'));
+
+        },
+        created(){
+            if( sessionStorage.getItem('currentMonth')){
+                this.currentMonth = sessionStorage.getItem('currentMonth');
+                this.contentData = this.monthDatas[this.currentMonth-1]
+            }else {
+                this.currentMonth = 1
+                this.contentData = this.monthDatas[0]
+            }
+        },
+        mounted(){
+            //如果没有重新渲染月份html（比如封装组件并缓存，则应该在beforeRouteEnter设置）
+            sessionStorage.getItem('monthListScrollLeft') && document.querySelector('.month-list').scrollTo(sessionStorage.getItem('monthListScrollLeft'), 0)
+        }
+    })
+</script>
